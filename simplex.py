@@ -70,16 +70,23 @@ def find_support_column(table, m, n, maximize=True):
 
 # поиск разрешающей строки
 def find_support_row(table, m, n, support_column, maximize=True):
+    lim = True
     row = 0
-    for i in range(m - 1):
-        if table[i, support_column] > 0:
-            row = i
+    for j in range(m - 1):
+        if table[j, support_column] > 0:
+            row = j
             break
-    for i in range(row, m - 1):
-        if (table[i, support_column] > 0) and ((table[i, n-1] / table[i, support_column]) < (table[row, n-1] / table[row, support_column])):
-            row = i
+    for j in range(row, m - 1):
+        if (table[j, support_column] > 0) and ((table[j, n-1] / table[j, support_column]) < (table[row, n-1] / table[row, support_column])):
+            row = j
+    for j in range(m - 1):
+        if table[row, j] > 0:
+            lim = True
+            break
+        else:
+            lim = False
 
-    return row
+    return row, lim
 
 
 def find_result(table, m, n):
@@ -127,6 +134,7 @@ def print_info(table, result, func):
 
 def simplex(a, b, c, maximize=True):
     m, n = a.shape
+    has_lim = True
 
     # создание симплекс-таблицы
     if maximize: # для поиска максимума в таблицу с противоположным знаком добавляется только сама функция
@@ -163,21 +171,25 @@ def simplex(a, b, c, maximize=True):
         print(f'Plan {table[m-1, :-1]} is not optimal. Changing of basis\n')
         # поиск разрешающих строки и столбца
         support_column = find_support_column(table, m, n, maximize)
-        support_row = find_support_row(table, m, n, support_column, maximize)
+        support_row, has_lim = find_support_row(table, m, n, support_column, maximize)
+        if not has_lim:
+            break
         # пересчет значений в новом базисе
         table, result = refill_table(table, m, n, support_row, support_column)
 
         print_info(table, result, C)
-
-    print(f'Plan {table[m-1, :-1]} is optimal')
-    result = find_result(table, m, n)
-    s = 0
-    for i in range(len(result)):
-        s += -C[i] * result[i]
-    if maximize:
-        print(f'Maximal value of function is {s}')
+    if has_lim:
+        print(f'Plan {table[m-1, :-1]} is optimal')
+        result = find_result(table, m, n)
+        s = 0
+        for i in range(len(result)):
+            s += -C[i] * result[i]
+        if maximize:
+            print(f'Maximal value of function is {s}')
+        else:
+            print(f'Minimal value of function is {s}')
     else:
-        print(f'Minimal value of function is {s}')
+        print('Target function is not limited. There is no optimal plan.')
 
 
 # входные данные
@@ -186,8 +198,15 @@ A = np.array([[3, 2],
               [1, 2]])
 b = np.array([12, 8])
 
+# c = np.array([2, 4])
+# A = np.array([[3, -1],
+#               [1, -2]])
+# b = np.array([9, 6])
+
 # для прямой задачи
+print('\nDIRECT PROBLEM\n')
 simplex(A, b, c)
 
 # для двойственной задачи
-simplex(A.T, c.T, b.T, maximize=False)
+print('\nDUAL PROBLEM\n')
+# simplex(A.T, c.T, b.T, maximize=False)
