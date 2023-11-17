@@ -5,18 +5,47 @@ import numpy as np
 class Simplex:
     def __init__(self, a, b, c, maximize=True):
         # создание симплекс-таблицы
-        if maximize:  # для поиска максимума в таблицу с противоположным знаком добавляется только сама функция
-            self.A = np.array([-x for x in a])
-            self.B = np.array([-x for x in b])
-            self.C = np.array([-x for x in c])
-        else:  # для минимизации с противоположным знаком добавляются все матрицы
-            self.A = a
-            self.B = b
-            self.C = np.array([-x for x in c])
+        if maximize:    # для поиска максимума в таблицу с противоположным знаком добавляется только сама функция
+            A = np.array([-x for x in a])
+            B = np.array([-x for x in b])
+            C = np.array([-x for x in c])
+        else:   # для минимизации с противоположным знаком добавляются все матрицы
+            A = a
+            B = b
+            C = np.array([-x for x in c])
+
+        t = np.hstack((A, np.eye(a.shape[0])))  # добавление фиктивных переменных
+        t = np.insert(t, t.shape[1], B, axis=1)
+        for i in range(t.shape[1] - a.shape[1]):
+            C = np.append(C, 0)
+
+        self.maximize = maximize
+        self.table = np.vstack([t, C])  # созданная таблица
+        self.m, self.n = self.table.shape   # изменение значений размеров
+
+    def solution_is_acceptable(self):
+        is_acceptable = True
+        for i in range(self.m - 1):
+            if self.table[i, self.n - 1] < 0:
+                is_acceptable = False
+                break
+
+        return is_acceptable
+
+    def plan_is_optimal(self):
+        is_optimal = True
+        for j in range(self.n - 1):
+            if self.table[self.m - 1, j] > 0:
+                is_optimal = False
+                break
+
+        return is_optimal
+
+
 
 
 # проверка оптимальности плана
-def optimal_check(table, m, n, maximize=True):
+def optimal(table, m, n, maximize=True):
     is_optimal = True
     if maximize:
         for j in range(n - 1):
