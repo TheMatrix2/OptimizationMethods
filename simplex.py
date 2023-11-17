@@ -2,6 +2,19 @@
 import numpy as np
 
 
+class Simplex:
+    def __init__(self, a, b, c, maximize=True):
+        # создание симплекс-таблицы
+        if maximize:  # для поиска максимума в таблицу с противоположным знаком добавляется только сама функция
+            self.A = np.array([-x for x in a])
+            self.B = np.array([-x for x in b])
+            self.C = np.array([-x for x in c])
+        else:  # для минимизации с противоположным знаком добавляются все матрицы
+            self.A = a
+            self.B = b
+            self.C = np.array([-x for x in c])
+
+
 # проверка оптимальности плана
 def optimal_check(table, m, n, maximize=True):
     is_optimal = True
@@ -121,8 +134,20 @@ def refill_table(table, m, n, support_row, support_column):
 
 
 def print_info(table, result, func):
+    num_rows, num_cols = table.shape
     print('Table:')
-    print(table)
+    header = [f"x{i}" for i in range(1, num_cols)] + ["b"]
+    print("{: >8}".format(""), end="")  # отступ для базисных переменных
+    for col_name in header:
+        print("{: >8}".format(col_name), end="")
+    print()  # новая строка
+
+    # Печать строк таблицы
+    for i in range(num_rows):
+        print("{: >8}".format("x{}".format(i + 1)), end="")
+        for j in range(num_cols):
+            print("{: >8.2f}".format(round(table[i, j], 2)), end="")
+        print()  # новая строка
     print(f'Solution: {result}')
     s = 0
     # получение значения функции в полученном плане
@@ -176,7 +201,6 @@ def simplex(a, b, c, maximize=True):
             break
         # пересчет значений в новом базисе
         table, result = refill_table(table, m, n, support_row, support_column)
-
         print_info(table, result, C)
     if has_lim:
         print(f'Plan {table[m-1, :-1]} is optimal')
@@ -193,10 +217,11 @@ def simplex(a, b, c, maximize=True):
 
 
 # входные данные
-c = np.array([1, 4])
-A = np.array([[3, 2],
-              [1, 2]])
-b = np.array([12, 8])
+c = np.array([-1, 1])
+A = np.array([[-1, 2],
+              [2, -1],
+              [-1, -1]])
+b = np.array([-2, 2, -5])
 
 # c = np.array([2, 4])
 # A = np.array([[3, -1],
@@ -205,7 +230,7 @@ b = np.array([12, 8])
 
 # для прямой задачи
 print('\nDIRECT PROBLEM\n')
-simplex(A, b, c)
+simplex(A, b, c, maximize=False)
 
 # для двойственной задачи
 print('\nDUAL PROBLEM\n')
