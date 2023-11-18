@@ -3,13 +3,12 @@ import numpy as np
 
 
 class Simplex:
-    def __init__(self, a, b, c, maximize=True):
-        # создание симплекс-таблицы
-        if maximize:    # для поиска максимума в таблицу с противоположным знаком добавляется только сама функция
-            A = np.array([-x for x in a])
-            B = np.array([-x for x in b])
-            C = np.array([-x for x in c])
-        else:   # для минимизации с противоположным знаком добавляются все матрицы
+    def __init__(self, a, b, c, maximize=True): # создание симплекс-таблицы
+        if maximize:    # для поиска максимума все матрицы добавляются в таблицу с противоположным знаком
+            A = np.array([-x for x in a.T])
+            B = np.array([-x for x in c.T])
+            C = np.array([-x for x in b.T])
+        else:   # для минимизации с противоположным знаком добавляется только матрица функции
             A = a
             B = b
             C = np.array([-x for x in c])
@@ -19,11 +18,29 @@ class Simplex:
         for i in range(t.shape[1] - a.shape[1]):
             C = np.append(C, 0)
 
-        self.maximize = maximize
         self.table = np.vstack([t, C])  # созданная таблица
         self.m, self.n = self.table.shape   # изменение значений размеров
+        self.basis = self.solution = np.zeros(self.n)   # строки базиса и решения
 
-    def solution_is_acceptable(self):
+    def function_is_limited(self, column):    # проверка ограниченности функции
+        lim = False
+        for i in range(self.m - 1):
+            if self.table[i, column] > 0:
+                lim = True
+                break
+
+        return lim
+
+    def solution_exists(self, row):
+        exists = False
+        for j in range(self.n - 1):
+            if self.table[row, j] < 0:
+                exists = True
+                break
+
+        return exists
+
+    def solution_is_acceptable(self):   # проверка допустимости решения
         is_acceptable = True
         for i in range(self.m - 1):
             if self.table[i, self.n - 1] < 0:
@@ -32,7 +49,7 @@ class Simplex:
 
         return is_acceptable
 
-    def plan_is_optimal(self):
+    def plan_is_optimal(self):  # проверка оптимальности решения
         is_optimal = True
         for j in range(self.n - 1):
             if self.table[self.m - 1, j] > 0:
@@ -41,8 +58,52 @@ class Simplex:
 
         return is_optimal
 
+    def support_row_b(self):    # разрешающая строка для поиска допустимого решения
+        row = 0
+        for i in range(self.m - 1):
+            if self.table[i, self.n - 1] < 0:
+                row = i
+                break
+        for i in range(row, self.m - 1):
+            if self.table[i, self.n - 1] < 0 and self.table[i, self.n - 1] < self.table[row, self.n - 1]:
+                row = i
 
+        return row
 
+    def support_column_b(self, row):    # разрешающий столбец для поиска допустимого решения
+        column = 0
+        for j in range(self.n - 1):
+            if self.table[row, j] < 0:
+                column = j
+                break
+        for j in range(self.n - 1):
+            if (self.table[row, j] < 0 and self.table[row, self.n - 1] / self.table[row, j] <
+                    self.table[row, self.n - 1] / self.table[row, column]):
+                column = j
+
+        return column
+
+    def find_support_column(self):  # разрешающий столбец для поиска оптимального решения
+        column = 0
+        for j in range(self.n - 1):
+            if self.table[self.m - 1, j] > self.table[self.m - 1, column]:
+                column = j
+
+        return column
+
+    def find_support_row(self, column):   # разрешающая строка для поиска оптимального решения
+        row = 0
+        for j in range(self.m - 1):
+            if self.table[j, column] > 0:
+                row = j
+                break
+        for j in range(row, self.m - 1):
+            if (self.table[j, column] > 0) and (
+                    (self.table[j, self.n - 1] / self.table[j, column]) <
+                    (self.table[row, self.n - 1] / self.table[row, column])):
+                row = j
+
+        return row
 
 # проверка оптимальности плана
 def optimal(table, m, n, maximize=True):
