@@ -200,8 +200,11 @@ class Simplex:
             self.print_info()
 
         if not break_flag:
+            count = 0
             while not self.plan_is_optimal() and self.solution_exists():
+                count += 1
                 print('Solution is not optimal')
+                print(f'Itaration {count}')
                 column = self.find_support_column()
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
