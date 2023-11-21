@@ -13,16 +13,18 @@ class Simplex:
             B = np.array([-x for x in b])
             C = np.array([-x for x in c])
 
+        self.Solution = np.zeros(len(c))    # строка решения по количеству переменных в функции
+
         t = np.hstack((A, np.eye(A.shape[0])))  # добавление фиктивных переменных
         t = np.insert(t, t.shape[1], B, axis=1)
         for i in range(t.shape[1] - A.shape[1]):
             C = np.append(C, 0)
 
         self.Maximize = maximize
-        self.Function = C
+        self.Function = c
         self.Table = np.vstack([t, C])  # созданная таблица
         self.M, self.N = self.Table.shape   # изменение значений размеров
-        self.Basis = self.Solution = np.zeros(self.N - 1)   # строки базиса и решения
+        self.Basis = np.zeros(self.N - 1)   # строка базиса
 
     def function_is_limited(self):    # проверка ограниченности функции
         lim = True
@@ -159,7 +161,7 @@ class Simplex:
                         basis[j] = 1
                         result[j] = self.Table[i, self.N - 1]
         self.Basis = basis
-        self.Solution = result
+        self.Solution = result[:len(self.Function)]
 
     def print_info(self):
         print('Table:')
@@ -175,7 +177,7 @@ class Simplex:
                 print("{: >8.2f}".format(round(self.Table[i, j], 2)), end="")
             print()
         print(f'Basis: {self.Basis}')
-        print('Solution: [', end="")
+        print('Solution: [ ', end="")
         for x in self.Solution:
             print(f'{round(x, 2)} ', end="")
         print(']')
@@ -204,30 +206,11 @@ class Simplex:
             while not self.plan_is_optimal() and self.solution_exists():
                 count += 1
                 print('Solution is not optimal')
-                print(f'Itaration {count}')
+                print(f'Iteration {count}')
                 column = self.find_support_column()
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
                 if not self.solution_exists():
-                    break_flag = True
                     break
                 self.find_solution()
                 self.print_info()
-        else:
-            self.check()
-
-        if not break_flag:
-            print('Solution: [', end="")
-            for x in self.Solution:
-                print(f'{round(x, 2)} ', end="")
-            print(']')
-            s = 0
-            # получение значения функции в полученном плане
-            for i in range(len(self.Solution)):
-                s += -self.Function[i] * self.Solution[i]
-            if self.Maximize:
-                print(f'Maximal acceptable and optimal value of target function is {round(s, 2)}')
-            else:
-                print(f'Minimal acceptable and optimal value of target function: {round(s, 2)}')
-        else:
-            self.check()
