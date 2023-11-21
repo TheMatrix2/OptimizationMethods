@@ -78,8 +78,8 @@ class Simplex:
     def plan_is_optimal(self):  # проверка оптимальности решения
         is_optimal = True
         for j in range(self.N - 1):
-            if ((self.Maximize and self.Table[self.M - 1, j] < 0) or
-                    (not self.Maximize and self.Table[self.M - 1, j] > 0)):
+            if ((self.Maximize and self.Table[self.M - 1, j] < -0) or
+                    (not self.Maximize and self.Table[self.M - 1, j] > -0)):
                 is_optimal = False
                 break
 
@@ -184,7 +184,7 @@ class Simplex:
         s = 0
         # получение значения функции в полученном плане
         for i in range(len(self.Solution)):
-            s += -self.Function[i] * self.Solution[i]
+            s += self.Function[i] * self.Solution[i]
         print(f'Value of target function: {round(s, 2)}')
         print()
 
