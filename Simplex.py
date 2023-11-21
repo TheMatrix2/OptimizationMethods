@@ -3,14 +3,14 @@ import numpy as np
 
 
 class Simplex:
-    def __init__(self, a, b, c, maximize=True):    # создание симплекс-таблицы
-        if maximize:    # для максимизации с противоположным знаком добавляется только матрица функции
-            A = a
-            B = b
-            C = np.array([-x for x in c])
-        else:   # для поиска минимума все матрицы добавляются в таблицу с противоположным знаком
+    def __init__(self, a, b, c, minimize=True):    # создание симплекс-таблицы
+        if minimize:    # для минимизации с противоположным знаком добавляется только матрица функции
             A = np.array([-x for x in a])
             B = np.array([-x for x in b])
+            C = np.array([-x for x in c])
+        else:   # для поиска максимума все матрицы добавляются в таблицу с противоположным знаком
+            A = a
+            B = b
             C = np.array([-x for x in c])
 
         self.Solution = np.zeros(len(c))    # строка решения по количеству переменных в функции
@@ -20,7 +20,7 @@ class Simplex:
         for i in range(t.shape[1] - A.shape[1]):
             C = np.append(C, 0)
 
-        self.Maximize = maximize
+        self.Minimize = minimize
         self.Function = c
         self.Table = np.vstack([t, C])  # созданная таблица
         self.M, self.N = self.Table.shape   # изменение значений размеров
@@ -30,11 +30,13 @@ class Simplex:
         lim = True
         for j in range(self.N - 1):
             for i in range(self.M - 1):
-                if self.Table[i, j] / self.Table[i, self.N - 1] >= -0:
+                if self.Table[i, j] / self.Table[i, self.N - 1] > 0:
                     lim = True
                     break
                 else:
                     lim = False
+            # if not lim:
+            #     break
 
         return lim
 
@@ -78,8 +80,8 @@ class Simplex:
     def plan_is_optimal(self):  # проверка оптимальности решения
         is_optimal = True
         for j in range(self.N - 1):
-            if ((self.Maximize and self.Table[self.M - 1, j] < -0) or
-                    (not self.Maximize and self.Table[self.M - 1, j] > -0)):
+            if ((self.Minimize and self.Table[self.M - 1, j] > 0) or
+                    (not self.Minimize and self.Table[self.M - 1, j] < 0)):
                 is_optimal = False
                 break
 
@@ -113,8 +115,8 @@ class Simplex:
     def find_support_column(self):  # разрешающий столбец для поиска оптимального решения
         column = 0
         for j in range(self.N - 1):
-            if ((self.Maximize and self.Table[self.M - 1, j] < self.Table[self.M - 1, column]) or
-                    (not self.Maximize and self.Table[self.M - 1, j] > self.Table[self.M - 1, column])):
+            if ((self.Minimize and self.Table[self.M - 1, j] > self.Table[self.M - 1, column]) or
+                    (not self.Minimize and self.Table[self.M - 1, j] < self.Table[self.M - 1, column])):
                 column = j
 
         return column
@@ -145,7 +147,7 @@ class Simplex:
             for j in range(self.N):
                 # пересчет остальных строк (из строки вычитаем разрешающую строку, умноженную на соответствующий
                 # элемент разрешающего столбца
-                new_table[i, j] = self.Table[i, j] - self.Table[i, support_column] * new_table[support_row, j]
+                new_table[i, j] = self.Table[i, j] - new_table[support_row, j] * self.Table[i, support_column]
         self.Table = new_table
 
     def find_solution(self):
@@ -191,7 +193,7 @@ class Simplex:
     def calculate(self):
         self.print_info()
         break_flag = False
-        while self.function_is_limited() and not self.solution_is_acceptable():
+        while not self.solution_is_acceptable():
             print('Solution is not acceptable')
             row = self.support_row_b()
             column = self.support_column_b(row)

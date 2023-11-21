@@ -1,13 +1,14 @@
 import random
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 P_CROSSOVER = 0.9
 P_MUTATION = 0.25
 MAX_GENERATIONS = 10
 
-# RANDOM_SEED = 100
-# random.seed(RANDOM_SEED)
+RANDOM_SEED = 1
+random.seed(RANDOM_SEED)
 
 
 def fitness_function(ind):
@@ -25,11 +26,10 @@ def float_to_binary(num):
     binary = '{0:0{1}b}'.format(int(shifted_num), exponent+1)
     integer_part = binary[:-exponent]
     fractional_part = binary[-exponent:].rstrip('0')
-    return '{0}.{1}'.format(integer_part, fractional_part)
+    return ('{0}.{1}'.format(integer_part, fractional_part))[:50 - 1]
 
 
 def binary_to_float(binary_str):
-    # sign = 1 if (binary_str[0] == '0' or binary_str[0] == '1') else -1
     parts = binary_str.split('.')
 
     integer_part = parts[0]
@@ -144,6 +144,7 @@ class Genetic:
         self.Population = Population(number_of_individuals, number_of_chromosomes)
         self.Population.create()
         self.AllFitness = []
+        self.AllMaxFitness = []
         self.Generation = 0
         self.Maximum = 0
 
@@ -163,9 +164,15 @@ class Genetic:
         while self.Generation != MAX_GENERATIONS:
             self.Population.generate_new()
             self.AllFitness.append(self.Population.AverageFitness)
+            self.AllMaxFitness.append(self.Population.MaxFitness)
             if self.Population.MaxFitness > self.Maximum:
                 self.Maximum = self.Population.MaxFitness
             self.Generation += 1
             self.print_info()
+
+    def get_diagram(self):
+        plt.plot(self.AllFitness, color='blue')
+        plt.plot(self.AllMaxFitness, color='red')
+        plt.show()
 
 
