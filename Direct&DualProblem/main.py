@@ -1,5 +1,4 @@
-import numpy as np
-from Simplex import Simplex
+from Simplex import *
 
 def print_result(simplex):
     if simplex.check():

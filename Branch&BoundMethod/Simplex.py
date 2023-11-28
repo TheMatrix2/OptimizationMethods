@@ -1,4 +1,3 @@
-# pip install numpy
 import numpy as np
 
 
@@ -25,11 +24,14 @@ class Simplex:
         self.Table = np.vstack([t, C])  # созданная таблица
         self.M, self.N = self.Table.shape   # изменение значений размеров
         self.Basis = np.zeros(self.N - 1)   # строка базиса
+        self.Variables = [x for x in range(len(c) + 1, self.N)]
 
     def function_is_limited(self):    # проверка ограниченности функции
         lim = True
         for j in range(self.N - 1):
             for i in range(self.M - 1):
+                if self.Table[i, self.N - 1] == 0:
+                    continue
                 if self.Table[i, j] / self.Table[i, self.N - 1] > 0:
                     lim = True
                     break
@@ -148,6 +150,7 @@ class Simplex:
                 # пересчет остальных строк (из строки вычитаем разрешающую строку, умноженную на соответствующий
                 # элемент разрешающего столбца
                 new_table[i, j] = self.Table[i, j] - new_table[support_row, j] * self.Table[i, support_column]
+        self.Variables[support_row] = support_column + 1
         self.Table = new_table
 
     def find_solution(self):
@@ -167,22 +170,26 @@ class Simplex:
 
     def print_info(self):
         print('Table:')
-        header = [f"x{i}" for i in range(1, self.N)] + ["b"]
+        header = [f"x{i}" for i in range(1, self.N)] + ["B"]
         print("{: >8}".format(""), end="")
         for col_name in header:
             print("{: >8}".format(col_name), end="")
         print()
 
-        for i in range(self.M):
-            print("{: >8}".format("x{}".format(i + 1)), end="")
+        for i in range(self.M - 1):
+            print("{: >8}".format("x{}".format(self.Variables[i])), end="")
             for j in range(self.N):
                 print("{: >8.2f}".format(round(self.Table[i, j], 2)), end="")
             print()
+        print("{: >8}".format("F"), end="")
+        for j in range(self.N):
+            print("{: >8.2f}".format(round(self.Table[self.M - 1, j], 2)), end="")
+        print()
         print(f'Basis: {self.Basis}')
         print('Solution: [ ', end="")
         for x in self.Solution:
-            print(f'{round(x, 2)} ', end="")
-        print(']')
+            print(f' {round(x, 2)} ', end="")
+        print(' ]')
         s = 0
         # получение значения функции в полученном плане
         for i in range(len(self.Solution)):
@@ -194,25 +201,22 @@ class Simplex:
         self.print_info()
         break_flag = False
         while not self.solution_is_acceptable():
-            print('Solution is not acceptable')
             row = self.support_row_b()
             column = self.support_column_b(row)
             self.refill_table(row, column)
-            if not self.function_is_limited():
-                break_flag = True
-            self.find_solution()
             self.print_info()
+            if not self.solution_exists():
+                break_flag = True
+                break
+            self.find_solution()
 
         if not break_flag:
-            count = 0
-            while not self.plan_is_optimal() and self.solution_exists():
-                count += 1
-                print('Solution is not optimal')
-                print(f'Iteration {count}')
+            while not self.plan_is_optimal():
                 column = self.find_support_column()
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
-                if not self.solution_exists():
+                self.print_info()
+                if not self.function_is_limited():
                     break
                 self.find_solution()
-                self.print_info()
+        self.print_info()
