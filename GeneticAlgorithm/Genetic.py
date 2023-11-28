@@ -64,7 +64,7 @@ def crossover(child1, child2):
     return [result[0][0], result[0][1]], [result[1][0], result[1][1]]
 
 
-def mutation(chromosome, probability=0.01):
+def mutation(chromosome, probability=0.1):
     s = list(chromosome)
     for i in range(len(s)):
         if s[i] == '.':
@@ -152,10 +152,9 @@ class Genetic:
         print(f'Generation: {self.Generation}')
         print('Population: ')
         print(self.Population.Individuals)
-        print(f'All fitness: {self.AllFitness}')
         print(f'Average fitness: {self.Population.AverageFitness}')
         print(f'Maximal fitness: {self.Population.MaxFitness}')
-        print(f'Maximum at all: {self.Maximum}')
+        print(f'Maximum at all: {self.Maximum}\n')
 
     def calculate(self):
         generation = 0
@@ -171,7 +170,7 @@ class Genetic:
             self.print_info()
 
     def get_diagram(self):
-        plt.plot(self.AllFitness, color='blue')
+        plt.scatter(np.arange(0, len(self.AllFitness), 1), self.AllFitness, color='blue')
         plt.plot(self.AllMaxFitness, color='red')
         plt.show()
 
