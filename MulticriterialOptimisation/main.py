@@ -5,6 +5,9 @@ import random
 # random.seed(3)
 LETTERS = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
 CRITERION = {0: 'Cost', 1: 'Cost of service', 2: 'Memory', 3: 'Screen'}
+ALTERNATIVES = {0: 'Computer', 1: 'Laptop', 2: 'Tablet', 3: 'Smartphone'}
+RANDOM_CONSISTENCY = 0.9
+N = 4
 
 
 def find_max(table, criteria):
@@ -28,12 +31,17 @@ class MultiCriteria:
         # ВЫБОР УСТРОЙСТВА ДЛЯ РАБОТЫ: компьютер, ноутбук, планшет, смартфон
         # Важность критериев. Цена - 8, обслуживание - 2, объем памяти - 4, экран - 6
         criteria_vector = [8, 2, 4, 6]
-        self.CriteriaVectorNormalized = [x / sum(criteria_vector) for x in criteria_vector]    # нормализованный
+        # нормализованный
+        self.CriteriaVectorNormalized = np.array([[x / sum(criteria_vector)] for x in criteria_vector])
 
         self.Alternatives = np.array([[3, 7, 6, 7],  # компьютер
                                       [4, 6, 5, 6],  # ноутбук
                                       [7, 4, 4, 5],  # планшет
                                       [5, 1, 5, 4]])  # смартфон
+        # self.Alternatives = np.array([[1, 9, 9, 1],  # компьютер
+        #                               [3, 7, 7, 3],  # ноутбук
+        #                               [7, 3, 1, 7],  # планшет
+        #                               [9, 1, 3, 9]])  # смартфон
         self.M, self.N = self.Alternatives.shape
 
     def print_table(self, table):
@@ -117,11 +125,59 @@ class MultiCriteria:
 
     # взвешивание и объединение критериев
     def weighing_and_comparing(self):
-        pass
+        normalized_table = np.zeros((self.M, self.N))
+        for j in range(self.N):
+            s = 0
+            for i in range(self.M):
+                s += self.Alternatives[i][j]
+            for i in range(self.M):
+                normalized_table[i][j] = round(self.Alternatives[i][j] / s, 2)
+        self.print_table(normalized_table)
+        result = np.dot(normalized_table, self.CriteriaVectorNormalized)
+        print(result)
 
+    # анализ иерархий
     def hierarchy(self):
-        pass
+        for k in range(4):
+            print(CRITERION[k])
+            comparing = np.ones((self.M, self.N))
+            summ_column = []
+            summ_row = np.zeros(self.N)
+            for i in range(self.M):
+                s = 1
+                m = 1
+                for j in range(self.N):
+                    comparing[i][j] = self.Alternatives[i][k] / self.Alternatives[j][k]
+                    s *= comparing[i][j]
+                    m *= comparing[i][j]
+                    summ_row[j] += comparing[i][j]
+                summ_column.append(pow(s, 1 / N))
+            normalized_column = [x / sum(summ_column) for x in summ_column]
+
+            header = [LETTERS[i] for i in range(self.N)] + ['Summ'] + ['nSumm']
+            print("{: >8}".format(""), end="")
+            for col_name in header:
+                print("{: >8}".format(col_name), end="")
+            print()
+
+            for i in range(self.M):
+                print("{: >8}".format(f"{LETTERS[i]}"), end="")
+                for j in range(self.N):
+                    print("{: >8.2f}".format(comparing[i, j]), end="")
+                print("{: >8.2f}".format(summ_column[i]), end="")
+                print("{: >8.2f}".format(normalized_column[i]), end="")
+                print()
+            print("{: >8}".format("Summ"), end="")
+            for j in range(self.N):
+                print("{: >8.2f}".format(summ_row[j]), end="")
+            print("{: >8.2f}".format(sum(summ_column)), end="")
+            print("{: >8.2f}".format(sum(normalized_column)), end="")
+            print()
+            print(sum(summ_row * normalized_column))
+            print("\n")
 
 mc = MultiCriteria()
 # mc.criteria_to_limitation(2)
-mc.pareto(1, 3)
+# mc.pareto(1, 3)
+# mc.weighing_and_comparing()
+mc.hierarchy()
