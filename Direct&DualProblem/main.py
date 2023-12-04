@@ -1,5 +1,6 @@
 from Simplex import *
 
+
 def print_result(simplex):
     if simplex.check():
         print('Solution: [', end="")
@@ -14,6 +15,7 @@ def print_result(simplex):
             print(f'Minimal acceptable and optimal value of target function is {round(s, 2)}')
         else:
             print(f'Maximal acceptable and optimal value of target function: {round(s, 2)}')
+
 
 # входные данные
 C = np.array([2, 6, 7])

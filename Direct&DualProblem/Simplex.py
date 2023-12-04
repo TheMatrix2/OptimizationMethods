@@ -3,14 +3,14 @@ import numpy as np
 
 class Simplex:
     def __init__(self, a, b, c, minimize=True):    # создание симплекс-таблицы
-        if minimize:    # для минимизации с противоположным знаком добавляется только матрица функции
-            A = np.array([-x for x in a])
-            B = np.array([-x for x in b])
-            C = np.array([-x for x in c])
-        else:   # для поиска максимума все матрицы добавляются в таблицу с противоположным знаком
+        if minimize:    # min(F(x))
             A = a
             B = b
             C = np.array([-x for x in c])
+        else:   # max(F(x)) = -min(-F(x))
+            A = np.array([-x for x in a])
+            B = np.array([-x for x in b])
+            C = c
 
         self.Solution = np.zeros(len(c))    # строка решения по количеству переменных в функции
 
@@ -30,13 +30,11 @@ class Simplex:
         lim = True
         for j in range(self.N - 1):
             for i in range(self.M - 1):
-                if self.Table[i, j] / self.Table[i, self.N - 1] >= 0:
+                if self.Table[i, j] != 0 and self.Table[i, self.N - 1] / self.Table[i, j] >= 0:
                     lim = True
                     break
                 else:
                     lim = False
-            # if not lim:
-            #     break
 
         return lim
 
@@ -80,8 +78,7 @@ class Simplex:
     def plan_is_optimal(self):  # проверка оптимальности решения
         is_optimal = True
         for j in range(self.N - 1):
-            if ((self.Minimize and self.Table[self.M - 1, j] > 0) or
-                    (not self.Minimize and self.Table[self.M - 1, j] < 0)):
+            if self.Table[self.M - 1, j] < 0:
                 is_optimal = False
                 break
 
@@ -115,8 +112,7 @@ class Simplex:
     def find_support_column(self):  # разрешающий столбец для поиска оптимального решения
         column = 0
         for j in range(self.N - 1):
-            if ((self.Minimize and self.Table[self.M - 1, j] > self.Table[self.M - 1, column]) or
-                    (not self.Minimize and self.Table[self.M - 1, j] < self.Table[self.M - 1, column])):
+            if self.Table[self.M - 1, j] < self.Table[self.M - 1, column]:
                 column = j
 
         return column
@@ -131,25 +127,19 @@ class Simplex:
                 Q = self.Table[i, self.N - 1] / self.Table[i, column]
             else:
                 continue
-            if (Q >= 0) and (Q < self.Table[row, self.N - 1] / self.Table[row, column]):
+            if (Q > 0) and (Q < self.Table[row, self.N - 1] / self.Table[row, column]):
                 row = i
 
         return row
 
     def refill_table(self, support_row, support_column, b=True):    # пересчет таблицы
-        new_table = np.zeros((self.M, self.N))
-        for j in range(self.N):
-            # в разрешающей строке все элементы делим на разрешающий элемент
-            new_table[support_row, j] = self.Table[support_row, j] / self.Table[support_row, support_column]
+        # в разрешающей строке все элементы делим на разрешающий элемент
+        self.Table[support_row] /= self.Table[support_row, support_column]
         for i in range(self.M):
             if i == support_row:
                 continue
-            for j in range(self.N):
-                # пересчет остальных строк (из строки вычитаем разрешающую строку, умноженную на соответствующий
-                # элемент разрешающего столбца
-                new_table[i, j] = self.Table[i, j] - new_table[support_row, j] * self.Table[i, support_column]
+            self.Table[i] -= self.Table[support_row] * self.Table[i, support_column]
         self.Variables[support_row] = support_column + 1
-        self.Table = new_table
 
     def find_solution(self):
         result = np.zeros(self.N - 1)
@@ -165,6 +155,14 @@ class Simplex:
                         result[j] = self.Table[i, self.N - 1]
         self.Basis = basis
         self.Solution = result[:len(self.Function)]
+
+    def find_func_value(self):
+        s = 0
+        # получение значения функции в полученном плане
+        for i in range(len(self.Solution)):
+            s += self.Function[i] * self.Solution[i]
+
+        return s
 
     def print_info(self):
         print('Table:')
@@ -188,11 +186,7 @@ class Simplex:
         for x in self.Solution:
             print(f' {round(x, 2)} ', end="")
         print(' ]')
-        s = 0
-        # получение значения функции в полученном плане
-        for i in range(len(self.Solution)):
-            s += self.Function[i] * self.Solution[i]
-        print(f'Value of target function: {round(s, 2)}')
+        print(f'Value of target function: {round(self.find_func_value(), 2)}')
         print()
 
     def calculate(self):
