@@ -4,12 +4,12 @@ import numpy as np
 class Simplex:
     def __init__(self, a, b, c, minimize=True):    # создание симплекс-таблицы
         if minimize:    # min(F(x))
-            A = a
-            B = b
-            C = np.array([-x for x in c])
-        else:   # max(F(x)) = -min(-F(x))
             A = np.array([-x for x in a])
             B = np.array([-x for x in b])
+            C = np.array([-x for x in c])
+        else:   # max(F(x)) = -min(-F(x))
+            A = a
+            B = b
             C = c
 
         self.Solution = np.zeros(len(c))    # строка решения по количеству переменных в функции
@@ -26,15 +26,12 @@ class Simplex:
         self.Basis = np.zeros(self.N - 1)   # строка базиса
         self.Variables = [x for x in range(len(c) + 1, self.N)]
 
-    def function_is_limited(self):    # проверка ограниченности функции
-        lim = True
-        for j in range(self.N - 1):
-            if self.Table[self.M - 1, j] < 0:
-                lim = False
-                for i in range(self.M - 1):
-                    if self.Table[i, j] > 0:
-                        lim = True
-                        break
+    def function_is_limited(self, column):    # проверка ограниченности функции
+        lim = False
+        for i in range(self.M - 1):
+            if self.Table[i, column] != 0 and self.Table[i, self.N - 1] / self.Table[1, column] > 0:
+                lim = True
+                break
 
         return lim
 
@@ -57,15 +54,6 @@ class Simplex:
 
         return exists
 
-    def check(self):
-        if not self.function_is_limited():
-            print('TARGET FUNCTION IS NOT LIMITED')
-            return False
-        if not self.solution_exists():
-            print("SOLUTION DOES NOT EXIST")
-            return False
-        return True
-
     def solution_is_acceptable(self):   # проверка допустимости решения
         is_acceptable = True
         for i in range(self.M - 1):
@@ -78,7 +66,7 @@ class Simplex:
     def plan_is_optimal(self):  # проверка оптимальности решения
         is_optimal = True
         for j in range(self.N - 1):
-            if self.Table[self.M - 1, j] < 0:
+            if self.Table[self.M - 1, j] > 0:
                 is_optimal = False
                 break
 
@@ -112,7 +100,7 @@ class Simplex:
     def find_support_column(self):  # разрешающий столбец для поиска оптимального решения
         column = 0
         for j in range(self.N - 1):
-            if self.Table[self.M - 1, j] < self.Table[self.M - 1, column]:
+            if self.Table[self.M - 1, j] > self.Table[self.M - 1, column]:
                 column = j
 
         return column
@@ -127,7 +115,7 @@ class Simplex:
                 Q = self.Table[i, self.N - 1] / self.Table[i, column]
             else:
                 continue
-            if (Q > 0) and (Q < self.Table[row, self.N - 1] / self.Table[row, column]):
+            if (Q >= 0) and (Q < self.Table[row, self.N - 1] / self.Table[row, column]):
                 row = i
 
         return row
@@ -210,9 +198,9 @@ class Simplex:
                 print('Solution is not optimal')
                 print(f'Iteration {count}')
                 column = self.find_support_column()
+                if not self.function_is_limited(column):
+                    break
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
-                if not self.function_is_limited():
-                    break
                 self.find_solution()
                 self.print_info()

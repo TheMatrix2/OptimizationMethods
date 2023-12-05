@@ -1,5 +1,3 @@
-import numpy as np
-
 from Simplex import *
 
 
@@ -26,11 +24,11 @@ class BranchAndBound:
         simp = Simplex(a, b, self.C, self.Minimize)
         simp.calculate()
         simp.print_info()
-        if not simp.check():
-            simp.check()
+        if not simp.solution_exists():
+            print('\nSOLUTION DOES NOT EXIST\n')
             return
-        if len(self.Values) != 0 and ((self.Minimize and simp.find_func_value() > min(self.Values)) or \
-                (not self.Minimize and simp.find_func_value() < max(self.Values))):
+        if len(self.Values) != 0 and ((self.Minimize and simp.find_func_value() > min(self.Values)) or
+                                      (not self.Minimize and simp.find_func_value() < max(self.Values))):
             print(f'Value {simp.find_func_value()} '
                   f'{"is more than minimal" if self.Minimize else "is less than maximal"} {max(self.Values)}\n')
             return
@@ -43,7 +41,7 @@ class BranchAndBound:
                     self.Solutions.append([simp.Solution])
                     print(f'Solutions: {self.Solutions}')
                     print(f'Values: {self.Values}')
-                    print(f'Minimal: {min(self.Values)}') if self.Minimize else print(f'Maximal: {min(self.Values)}')
+                    print(f'Minimal: {min(self.Values)}') if self.Minimize else print(f'Maximal: {max(self.Values)}')
                     print(f'Nodes: {self.Nodes}\n')
                     return
         except:
@@ -57,10 +55,10 @@ class BranchAndBound:
 
         print(f'Add x{k+1} <= {node // 1}\n')
         new_lhs = np.zeros(self.A.shape[1])
-        new_lhs[k] = 1
-        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B, node // 1))
+        new_lhs[k] = 1 if not self.Minimize else -1
+        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B, node//1 if not self.Minimize else -node//1))
 
         print(f'Add x{k + 1} >= {node // 1 + 1}\n')
         new_lhs = np.zeros(self.A.shape[1])
-        new_lhs[k] = -1
-        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B, -(node // 1 + 1)))
+        new_lhs[k] = -1 if not self.Minimize else 1
+        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B, -(node//1+1) if not self.Minimize else node//1+1))

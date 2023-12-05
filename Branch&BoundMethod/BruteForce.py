@@ -34,6 +34,6 @@ class BruteForce:
                                 self.A[2, 0] * i + self.A[2, 1] * j + self.A[2, 2] * k <= self.B[2]:
                             value = self.C[0] * i + self.C[1] * j + self.C[2] * k
                             if value > max_value:
-                                min_value = value
+                                max_value = value
                                 print(f'Solution: [{i}, {j}, {k}]; Value: {value};')
-            print(f'Minimal value of target function is {min_value}')
+            print(f'Minimal value of target function is {max_value}')

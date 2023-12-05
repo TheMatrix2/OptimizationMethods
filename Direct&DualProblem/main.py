@@ -2,7 +2,7 @@ from Simplex import *
 
 
 def print_result(simplex):
-    if simplex.check():
+    if simplex.solution_exists():
         print('Solution: [', end="")
         for x in simplex.Solution:
             print(f'{round(x, 2)} ', end="")

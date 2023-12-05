@@ -8,11 +8,11 @@ if __name__ == '__main__':
                   [0, 0.5, 2]])
     B = np.array([3, 8, 1])
 
-    bb1 = BranchAndBound(A, B, C)
+    bb1 = BranchAndBound(A, B, C, minimize=False)
     bb1.calculate(A, B)
     #
     # bb2 = BranchAndBound(A.T, C.T, B.T)
     # bb2.calculate(A.T, C.T)
 
-    bf = BruteForce(A, B, C)
+    bf = BruteForce(A, B, C, minimize=False)
     bf.calculate()
