@@ -67,7 +67,7 @@ def crossover(child1, child2):
 def mutation(chromosome, probability=0.1):
     s = list(chromosome)
     for i in range(len(s)):
-        if s[i] == '.':
+        if s[i] == '.' or s[i] == '-':
             continue
         if random.random() < probability:
             s[i] = '0' if s[i] == '1' else '1'
@@ -173,5 +173,3 @@ class Genetic:
         plt.scatter(np.arange(0, len(self.AllFitness), 1), self.AllFitness, color='blue')
         plt.plot(self.AllMaxFitness, color='red')
         plt.show()
-
-

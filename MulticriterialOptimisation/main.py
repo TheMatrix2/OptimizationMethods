@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
-# random.seed(3)
+random.seed(3)
 LETTERS = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
 CRITERION = {0: 'Cost', 1: 'Cost of service', 2: 'Memory', 3: 'Screen'}
 ALTERNATIVES = {0: 'Computer', 1: 'Laptop', 2: 'Tablet', 3: 'Smartphone'}
@@ -38,10 +38,6 @@ class MultiCriteria:
                                       [4, 6, 5, 6],  # ноутбук
                                       [7, 4, 4, 5],  # планшет
                                       [5, 1, 5, 4]])  # смартфон
-        # self.Alternatives = np.array([[1, 9, 9, 1],  # компьютер
-        #                               [3, 7, 7, 3],  # ноутбук
-        #                               [7, 3, 1, 7],  # планшет
-        #                               [9, 1, 3, 9]])  # смартфон
         self.M, self.N = self.Alternatives.shape
 
     def print_table(self, table):
@@ -138,20 +134,39 @@ class MultiCriteria:
 
     # анализ иерархий
     def hierarchy(self):
+        cost = np.array([[1, 3, 1/3, 1],
+                         [0, 1, 1/5, 3],
+                         [0, 0, 1, 5],
+                         [0, 0, 0, 1]])
+        cost_of_service = np.array([[1, 3, 3, 7],
+                                    [0, 1, 1, 1/3],
+                                    [0, 0, 1, 1],
+                                    [0, 0, 0, 1]])
+        memory = np.array([[1, 3, 5, 1/3],
+                           [0, 1, 3, 1],
+                           [0, 0, 1, 1/7],
+                           [0, 0, 0, 1]])
+        screen = np.array([[1, 1/3, 1/5, 1/7],
+                           [0, 1, 1, 1/5],
+                           [0, 0, 1, 1/3],
+                           [0, 0, 0, 1]])
+        tables = [cost, cost_of_service, memory, screen]
+
         for k in range(4):
             print(CRITERION[k])
-            comparing = np.ones((self.M, self.N))
+            for i in range(self.M - 1, 0, -1):  # заполнение части под диагональю
+                for j in range(self.N):
+                    tables[k][i, j] = 1 / tables[k][j, i]
             summ_column = []
             summ_row = np.zeros(self.N)
             for i in range(self.M):
-                s = 1
+                s = 0
                 m = 1
                 for j in range(self.N):
-                    comparing[i][j] = self.Alternatives[i][k] / self.Alternatives[j][k]
-                    s *= comparing[i][j]
-                    m *= comparing[i][j]
-                    summ_row[j] += comparing[i][j]
-                summ_column.append(pow(s, 1 / N))
+                    s += tables[k][i, j]
+                    m *= tables[k][i, j]
+                    summ_row[j] += tables[k][i, j]
+                summ_column.append(s)
             normalized_column = [x / sum(summ_column) for x in summ_column]
 
             header = [LETTERS[i] for i in range(self.N)] + ['Summ'] + ['nSumm']
@@ -163,7 +178,7 @@ class MultiCriteria:
             for i in range(self.M):
                 print("{: >8}".format(f"{LETTERS[i]}"), end="")
                 for j in range(self.N):
-                    print("{: >8.2f}".format(comparing[i, j]), end="")
+                    print("{: >8.2f}".format(tables[k][i, j]), end="")
                 print("{: >8.2f}".format(summ_column[i]), end="")
                 print("{: >8.2f}".format(normalized_column[i]), end="")
                 print()
@@ -173,11 +188,15 @@ class MultiCriteria:
             print("{: >8.2f}".format(sum(summ_column)), end="")
             print("{: >8.2f}".format(sum(normalized_column)), end="")
             print()
-            print(sum(summ_row * normalized_column))
+            print(f'Consistency ratio: {round((sum(summ_row * normalized_column) - N) / (0.9 * (N - 1)), 2)}')
             print("\n")
 
 mc = MultiCriteria()
-# mc.criteria_to_limitation(2)
-# mc.pareto(1, 3)
-# mc.weighing_and_comparing()
+print("\nMETHOD OF CHANGES OF CRITERIA BY LIMITATION\n")
+mc.criteria_to_limitation(2)
+print("\nMETHOD OF PARETO SPACE NARROWING\n")
+mc.pareto(1, 3)
+print("\nMETHOD OF WEIGHING AND UNIFICATION\n")
+mc.weighing_and_comparing()
+print("\nMETHOD OF HIERARCHY ANALYSIS\n")
 mc.hierarchy()

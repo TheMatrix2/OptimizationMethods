@@ -29,12 +29,12 @@ class Simplex:
     def function_is_limited(self):    # проверка ограниченности функции
         lim = True
         for j in range(self.N - 1):
-            for i in range(self.M - 1):
-                if self.Table[i, j] != 0 and self.Table[i, self.N - 1] / self.Table[i, j] >= 0:
-                    lim = True
-                    break
-                else:
-                    lim = False
+            if self.Table[self.M - 1, j] < 0:
+                lim = False
+                for i in range(self.M - 1):
+                    if self.Table[i, j] > 0:
+                        lim = True
+                        break
 
         return lim
 
@@ -59,10 +59,10 @@ class Simplex:
 
     def check(self):
         if not self.function_is_limited():
-            print('Target function is not limited')
+            print('TARGET FUNCTION IS NOT LIMITED')
             return False
         if not self.solution_exists():
-            print("Solution does not exist")
+            print("SOLUTION DOES NOT EXIST")
             return False
         return True
 
@@ -120,7 +120,7 @@ class Simplex:
     def find_support_row(self, column):   # разрешающая строка для поиска оптимального решения
         row = 0
         for i in range(self.M - 1):
-            if self.Table[i, column] != 0 and self.Table[i, self.N - 1] / self.Table[i, column] > 0:
+            if self.Table[i, column] != 0 and self.Table[i, self.N - 1] / self.Table[i, column] >= 0:
                 row = i
         for i in range(self.M - 1):
             if self.Table[i, column] != 0:
@@ -197,7 +197,7 @@ class Simplex:
             row = self.support_row_b()
             column = self.support_column_b(row)
             self.refill_table(row, column)
-            if not self.function_is_limited():
+            if not self.solution_exists():
                 break_flag = True
                 break
             self.find_solution()
@@ -205,14 +205,14 @@ class Simplex:
 
         if not break_flag:
             count = 0
-            while not self.plan_is_optimal() and self.solution_exists():
+            while not self.plan_is_optimal():
                 count += 1
                 print('Solution is not optimal')
                 print(f'Iteration {count}')
                 column = self.find_support_column()
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
-                if not self.solution_exists():
+                if not self.function_is_limited():
                     break
                 self.find_solution()
                 self.print_info()
