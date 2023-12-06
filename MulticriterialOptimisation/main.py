@@ -4,7 +4,7 @@ import random
 
 random.seed(3)
 LETTERS = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
-CRITERION = {0: 'Cost', 1: 'Cost of service', 2: 'Memory', 3: 'Screen'}
+CRITERION = {0: 'Cost', 1: 'Cost of service', 2: 'Memory', 3: 'Screen', 4: 'Criteria priority'}
 ALTERNATIVES = {0: 'Computer', 1: 'Laptop', 2: 'Tablet', 3: 'Smartphone'}
 RANDOM_CONSISTENCY = 0.9
 N = 4
@@ -150,9 +150,15 @@ class MultiCriteria:
                            [0, 1, 1, 1/5],
                            [0, 0, 1, 1/3],
                            [0, 0, 0, 1]])
-        tables = [cost, cost_of_service, memory, screen]
+        criteria_priority = np.array([[1., 3., 5., 7.],
+                                      [0., 1., 3., 5.],
+                                      [0., 0., 1., 3.],
+                                      [0., 0., 0., 1.]])
+        tables = [cost, cost_of_service, memory, screen, criteria_priority]
 
-        for k in range(4):
+        alternative_comparing = np.array(np.zeros(self.M))
+        criteria_comparing = []
+        for k in range(len(tables)):
             print(CRITERION[k])
             for i in range(self.M - 1, 0, -1):  # заполнение части под диагональю
                 for j in range(self.N):
@@ -169,7 +175,7 @@ class MultiCriteria:
                 summ_column.append(s)
             normalized_column = [x / sum(summ_column) for x in summ_column]
 
-            header = [LETTERS[i] for i in range(self.N)] + ['Summ'] + ['nSumm']
+            header = [LETTERS[i] if k != (len(tables)-1) else i for i in range(self.N)] + ['Summ'] + ['nSumm']
             print("{: >8}".format(""), end="")
             for col_name in header:
                 print("{: >8}".format(col_name), end="")
@@ -190,6 +196,13 @@ class MultiCriteria:
             print()
             print(f'Consistency ratio: {round((sum(summ_row * normalized_column) - N) / (0.9 * (N - 1)), 2)}')
             print("\n")
+
+            if k != len(tables) - 1:
+                alternative_comparing = np.vstack([alternative_comparing, normalized_column])
+            else:
+                criteria_comparing = np.array(normalized_column)
+        print(np.dot(alternative_comparing[1:].T, criteria_comparing))
+
 
 mc = MultiCriteria()
 print("\nMETHOD OF CHANGES OF CRITERIA BY LIMITATION\n")

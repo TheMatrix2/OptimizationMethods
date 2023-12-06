@@ -2,17 +2,37 @@ import random
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
 
 P_CROSSOVER = 0.9
-P_MUTATION = 0.25
+P_MUTATION = 0.15
 MAX_GENERATIONS = 10
 
 RANDOM_SEED = 1
-random.seed(RANDOM_SEED)
+# random.seed(RANDOM_SEED)
 
 
 def fitness_function(ind):
     return math.cos(ind[0])*math.cos(ind[1])
+
+
+def fitness_function_graphic():
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    x = np.arange(-2, 2, 0.01)
+    y = np.arange(-2, 2, 0.01)
+    x, y = np.meshgrid(x, y)
+    z = np.cos(x)*np.cos(y)
+    surf = ax.plot_surface(x, y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.set_zlim(-1.01, 1.01)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    # A StrMethodFormatter is used automatically
+    ax.zaxis.set_major_formatter('{x:.02f}')
+
+    # Add a color bar which maps values to colors.
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    plt.show()
 
 
 def float_to_binary(num):
@@ -64,7 +84,7 @@ def crossover(child1, child2):
     return [result[0][0], result[0][1]], [result[1][0], result[1][1]]
 
 
-def mutation(chromosome, probability=0.1):
+def mutation(chromosome, probability=0.03):
     s = list(chromosome)
     for i in range(len(s)):
         if s[i] == '.' or s[i] == '-':
@@ -107,7 +127,6 @@ class Population:
                 k1, k2 = (random.randint(0, self.NumberOfIndividuals - 1),
                           random.randint(0, self.NumberOfIndividuals - 1))
             if fitness_function(self.Individuals[k1]) > fitness_function(self.Individuals[k2]):
-                add = self.Individuals[k1]
                 offspring = np.vstack([offspring, self.Individuals[k1]])
             else:
                 offspring = np.vstack([offspring, self.Individuals[k2]])
@@ -119,12 +138,12 @@ class Population:
         indexes = [x for x in range(len(self.Individuals))]
         random.shuffle(indexes)
         for i1, i2 in zip(indexes[::2], indexes[1::2]):
-            if random.random() < P_CROSSOVER:
-                child1, child2 = crossover([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
-                                           [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
-            else:
-                child1, child2 = ([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
-                                  [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
+            # if random.random() < P_CROSSOVER:
+            child1, child2 = crossover([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
+                                       [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
+            # else:
+            #     child1, child2 = ([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
+            #                       [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
             children.append(child1)
             children.append(child2)
 
@@ -149,12 +168,20 @@ class Genetic:
         self.Maximum = 0
 
     def print_info(self):
-        print(f'Generation: {self.Generation}')
+        print(f'\nGeneration: {self.Generation}')
         print('Population: ')
-        print(self.Population.Individuals)
-        print(f'Average fitness: {self.Population.AverageFitness}')
-        print(f'Maximal fitness: {self.Population.MaxFitness}')
-        print(f'Maximum at all: {self.Maximum}\n')
+        print("{: >5}".format(""), end="")
+        print("{: >9}".format(f"chromo1"), end="")
+        print("{: >9}".format(f"chromo2"), end="")
+        print()
+        for i in range(self.Population.NumberOfIndividuals):
+            print("{: >5}".format(f"ind{i+1}"), end="")
+            for j in range(self.Population.NumberOfChromosomes):
+                print("{: >9.5f}".format(round(self.Population.Individuals[i, j], 5)), end="")
+            print()
+        print(f'\nAverage fitness: {round(self.Population.AverageFitness, 5)}')
+        print(f'Maximal fitness: {round(self.Population.MaxFitness, 5)}')
+        print(f'Maximum at all: {round(self.Maximum, 5)}\n')
 
     def calculate(self):
         generation = 0

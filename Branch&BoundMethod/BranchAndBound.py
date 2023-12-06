@@ -38,7 +38,7 @@ class BranchAndBound:
                 if len(self.Values) == 0 or (self.Minimize and simp.find_func_value() < min(self.Values)) or \
                         (not self.Minimize and simp.find_func_value() > max(self.Values)):
                     self.Values.append(simp.find_func_value())
-                    self.Solutions.append([simp.Solution])
+                    self.Solutions.append(simp.Solution)
                     print(f'Solutions: {self.Solutions}')
                     print(f'Values: {self.Values}')
                     print(f'Minimal: {min(self.Values)}') if self.Minimize else print(f'Maximal: {max(self.Values)}')
@@ -50,8 +50,8 @@ class BranchAndBound:
         self.Count += 1
         print(f'{self.Count} LEVEL\n')
         node = round(simp.Solution[k], 2)
-        print(f'Branching by {node} on x <= {node // 1} and x >= {node // 1 + 1}')
-        self.Nodes.append(f'x{k+1} = {node}\n')
+        print(f'Branching by {node} on x <= {node // 1} and x >= {node // 1 + 1}\n')
+        self.Nodes.append(node)
 
         print(f'Add x{k+1} <= {node // 1}\n')
         new_lhs = np.zeros(self.A.shape[1])
@@ -61,4 +61,5 @@ class BranchAndBound:
         print(f'Add x{k + 1} >= {node // 1 + 1}\n')
         new_lhs = np.zeros(self.A.shape[1])
         new_lhs[k] = -1 if not self.Minimize else 1
-        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B, -(node//1+1) if not self.Minimize else node//1+1))
+        self.calculate(a=np.vstack([self.A, new_lhs]), b=np.append(self.B,
+                                                                   -(node//1+1) if not self.Minimize else node//1+1))

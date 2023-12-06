@@ -183,7 +183,6 @@ class Simplex:
         self.print_info()
         break_flag = False
         while not self.solution_is_acceptable():
-            print('Solution is not acceptable\n')
             row = self.support_row_b()
             column = self.support_column_b(row)
             self.refill_table(row, column)
@@ -191,18 +190,12 @@ class Simplex:
                 break_flag = True
                 break
             self.find_solution()
-            self.print_info()
 
         if not break_flag:
-            count = 0
             while not self.plan_is_optimal():
-                count += 1
-                print('Solution is not optimal')
-                print(f'Iteration {count}')
                 column = self.find_support_column()
                 if not self.function_is_limited(column):
                     break
                 row = self.find_support_row(column)
                 self.refill_table(row, column)
                 self.find_solution()
-                self.print_info()

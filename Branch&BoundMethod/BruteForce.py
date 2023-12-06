@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class BruteForce:
     def __init__(self, a, b, c, minimize=True):
         self.A = a
@@ -22,7 +19,7 @@ class BruteForce:
                             if value < min_value:
                                 min_value = value
                                 print(f'Solution: [{i}, {j}, {k}]; Value: {value};')
-            print(f'Minimal value of target function is {min_value}')
+            print(f'\nMinimal value of target function is {min_value}\n')
 
         else:
             max_value = 0
@@ -36,4 +33,4 @@ class BruteForce:
                             if value > max_value:
                                 max_value = value
                                 print(f'Solution: [{i}, {j}, {k}]; Value: {value};')
-            print(f'Minimal value of target function is {max_value}')
+            print(f'\nMinimal value of target function is {max_value}\n')
