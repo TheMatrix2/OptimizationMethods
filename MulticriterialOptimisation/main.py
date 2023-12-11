@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
-random.seed(3)
+# random.seed(2)
 LETTERS = {0: 'A', 1: 'B', 2: 'C', 3: 'D'}
 CRITERION = {0: 'Cost', 1: 'Cost of service', 2: 'Memory', 3: 'Screen', 4: 'Criteria priority'}
 ALTERNATIVES = {0: 'Computer', 1: 'Laptop', 2: 'Tablet', 3: 'Smartphone'}
@@ -34,10 +34,10 @@ class MultiCriteria:
         # нормализованный
         self.CriteriaVectorNormalized = np.array([[x / sum(criteria_vector)] for x in criteria_vector])
 
-        self.Alternatives = np.array([[3, 7, 6, 7],  # компьютер
-                                      [4, 6, 5, 6],  # ноутбук
-                                      [7, 4, 4, 5],  # планшет
-                                      [5, 1, 5, 4]])  # смартфон
+        self.Alternatives = np.array([[7, 4, 6, 7],  # компьютер
+                                      [7, 5, 5, 6],  # ноутбук
+                                      [3, 6, 4, 5],  # планшет
+                                      [6, 7, 5, 4]])  # смартфон
         self.M, self.N = self.Alternatives.shape
 
     def print_table(self, table):
@@ -108,11 +108,13 @@ class MultiCriteria:
         plt.scatter(self.Alternatives[criteria1 - 1], self.Alternatives[criteria2 - 1])
         for label, x, y in zip(['A', 'B', 'C', 'D'], self.Alternatives[criteria1 - 1], self.Alternatives[criteria2 - 1]):
             plt.annotate(label, xy=(x, y), xytext=(5, -5), textcoords='offset points')
-        max_value = max(max(self.Alternatives[criteria1 - 1]), max(self.Alternatives[criteria2 - 1]))
-        min_value = min(min(self.Alternatives[criteria1 - 1]), min(self.Alternatives[criteria2 - 1]))
-        plt.scatter(max_value, max_value, marker='*', color='red', label='Utopia')
-        plt.xlim(min_value - 1, max_value + 1)
-        plt.ylim(min_value - 1, max_value + 1)
+        max_value = 10
+        min_value = 1
+        plt.scatter(min_value if criteria1-1 == 0 or criteria1-1 == 1 else max_value,
+                    min_value if criteria2-1 == 0 or criteria2-1 == 1 else max_value,
+                    marker='*', color='red', label='Utopia')
+        plt.xlim(0, 12)
+        plt.ylim(0, 12)
         plt.xlabel(CRITERION[criteria1 - 1])
         plt.ylabel(CRITERION[criteria2 - 1])
         plt.legend()
@@ -208,7 +210,7 @@ mc = MultiCriteria()
 print("\nMETHOD OF CHANGES OF CRITERIA BY LIMITATION\n")
 mc.criteria_to_limitation(2)
 print("\nMETHOD OF PARETO SPACE NARROWING\n")
-mc.pareto(1, 3)
+mc.pareto(1, 4)
 print("\nMETHOD OF WEIGHING AND UNIFICATION\n")
 mc.weighing_and_comparing()
 print("\nMETHOD OF HIERARCHY ANALYSIS\n")
