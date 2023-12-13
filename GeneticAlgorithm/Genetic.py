@@ -5,13 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 
-P_CROSSOVER = 0.9
-P_MUTATION = 0.15
+P_MUTATION = 0.3
 MAX_GENERATIONS = 10
-
-RANDOM_SEED = 1
-# random.seed(RANDOM_SEED)
-
 
 def fitness_function(ind):
     return math.cos(ind[0])*math.cos(ind[1])
@@ -84,7 +79,7 @@ def crossover(child1, child2):
     return [result[0][0], result[0][1]], [result[1][0], result[1][1]]
 
 
-def mutation(chromosome, probability=0.03):
+def mutation(chromosome, probability=0.04):
     s = list(chromosome)
     for i in range(len(s)):
         if s[i] == '.' or s[i] == '-':
@@ -107,6 +102,7 @@ class Population:
         self.Fitness = np.zeros(number_of_individuals)
         self.AverageFitness = 0
         self.MaxFitness = 0
+        self.History = []
 
     def create(self):
         for i in range(self.NumberOfIndividuals):
@@ -114,7 +110,6 @@ class Population:
             gen2 = random.uniform(-2, 2)
             self.Individuals[i][0], self.Individuals[i][1] = gen1, gen2
             self.Fitness[i] = fitness_function([gen1, gen2])
-            # summ += self.Fitness[i]
         summ = np.sum(self.Fitness)
         self.AverageFitness = summ / self.NumberOfIndividuals
         self.MaxFitness = max(self.Fitness)
@@ -138,12 +133,8 @@ class Population:
         indexes = [x for x in range(len(self.Individuals))]
         random.shuffle(indexes)
         for i1, i2 in zip(indexes[::2], indexes[1::2]):
-            # if random.random() < P_CROSSOVER:
             child1, child2 = crossover([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
                                        [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
-            # else:
-            #     child1, child2 = ([float_to_binary(parents[i1][0]), float_to_binary(parents[i1][1])],
-            #                       [float_to_binary(parents[i2][0]), float_to_binary(parents[i2][1])])
             children.append(child1)
             children.append(child2)
 
@@ -156,16 +147,20 @@ class Population:
         summ = np.sum(self.Fitness)
         self.AverageFitness = summ / self.NumberOfIndividuals
         self.MaxFitness = max(self.Fitness)
+        for i in range(self.NumberOfIndividuals):
+            self.History.append(self.Individuals[i])
 
 
 class Genetic:
     def __init__(self, number_of_individuals, number_of_chromosomes):
         self.Population = Population(number_of_individuals, number_of_chromosomes)
         self.Population.create()
-        self.AllFitness = []
+        self.AllAverageFitness = []
         self.AllMaxFitness = []
         self.Generation = 0
         self.Maximum = 0
+        self.x = []
+        self.y = []
 
     def print_info(self):
         print(f'\nGeneration: {self.Generation}')
@@ -176,6 +171,8 @@ class Genetic:
         print()
         for i in range(self.Population.NumberOfIndividuals):
             print("{: >5}".format(f"ind{i+1}"), end="")
+            self.x.append(self.Population.Individuals[i, 0])
+            self.y.append(self.Population.Individuals[i, 1])
             for j in range(self.Population.NumberOfChromosomes):
                 print("{: >9.5f}".format(round(self.Population.Individuals[i, j], 5)), end="")
             print()
@@ -184,12 +181,11 @@ class Genetic:
         print(f'Maximum at all: {round(self.Maximum, 5)}\n')
 
     def calculate(self):
-        generation = 0
-        self.AllFitness.append(self.Population.AverageFitness)
+        self.AllAverageFitness.append(self.Population.AverageFitness)
         self.print_info()
         while self.Generation != MAX_GENERATIONS:
             self.Population.generate_new()
-            self.AllFitness.append(self.Population.AverageFitness)
+            self.AllAverageFitness.append(self.Population.AverageFitness)
             self.AllMaxFitness.append(self.Population.MaxFitness)
             if self.Population.MaxFitness > self.Maximum:
                 self.Maximum = self.Population.MaxFitness
@@ -197,6 +193,17 @@ class Genetic:
             self.print_info()
 
     def get_diagram(self):
-        plt.scatter(np.arange(0, len(self.AllFitness), 1), self.AllFitness, color='blue')
-        plt.plot(self.AllMaxFitness, color='red')
+        plt.scatter(np.arange(0, len(self.AllAverageFitness), 1), self.AllAverageFitness, color='blue')
+        plt.xlabel('Поколения')
+        plt.ylabel('Средняя приспособленность (max=1)')
+        plt.grid(True)
+        plt.show()
+
+        colors = np.array([x*100/(MAX_GENERATIONS*4+4) for x in range(MAX_GENERATIONS*4+4)])
+        plt.scatter(self.x, self.y, c=colors, cmap='viridis')
+        plt.xlim(-2, 2)
+        plt.ylim(-2, 2)
+        plt.xlabel('Хромосома 1')
+        plt.ylabel('Хромосома 2')
+        plt.grid(True)
         plt.show()

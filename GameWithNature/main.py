@@ -1,6 +1,6 @@
 import numpy as np
 
-ALPHA = 0.4
+ALPHA = 0.1
 MATRIX = np.array([[6, 17, 16, 18, 15],
                    [18, 8, 16, 8, 8],
                    [6, 13, 18, 4, 3],
@@ -36,18 +36,21 @@ def bernully(matrix=MATRIX):
     print_column(result_vars)
 
 
+# пессимистический
 def pessimistic(matrix=MATRIX):
     print("\n\nPessimistic criterion\n")
     result_vars = [min(matrix[i]) for i in range(matrix.shape[0])]
     print_column(result_vars)
 
 
+# оптимистический
 def optimistic(matrix=MATRIX):
     print("\n\nOptimistic criterion\n")
     result_vars = [max(matrix[i]) for i in range(matrix.shape[0])]
     print_column(result_vars)
 
 
+# критерий Гурвица
 def gurwic(matrix=MATRIX):
     print("\n\nGurwic's criterion\n")
     print(f'Probability of success is {ALPHA}')
@@ -55,6 +58,7 @@ def gurwic(matrix=MATRIX):
     print_column(result_vars)
 
 
+# критерий Саведжа
 def savage(matrix=MATRIX):
     print("\n\nSavage's criterion\n")
     matrix_of_risks = np.zeros(matrix.shape)

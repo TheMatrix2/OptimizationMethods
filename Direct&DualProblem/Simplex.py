@@ -168,14 +168,14 @@ class Simplex:
             print()
         print("{: >8}".format("F"), end="")
         for j in range(self.N):
-            print("{: >8.2f}".format(round(self.Table[self.M - 1, j], 2)), end="")
+            print("{: >8.2f}".format(round(self.Table[self.M - 1, j], 3)), end="")
         print()
         print(f'Basis: {self.Basis}')
         print('Solution: [ ', end="")
         for x in self.Solution:
-            print(f' {round(x, 2)} ', end="")
+            print(f' {round(x, 3)} ', end="")
         print(' ]')
-        print(f'Value of target function: {round(self.find_func_value(), 2)}')
+        print(f'Value of target function: {round(self.find_func_value(), 3)}')
         print()
 
     def calculate(self):

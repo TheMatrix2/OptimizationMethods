@@ -105,9 +105,12 @@ class MultiCriteria:
 
     # формирование и сужение множества Парето
     def pareto(self, criteria1, criteria2):
-        plt.scatter(self.Alternatives[criteria1 - 1], self.Alternatives[criteria2 - 1])
-        for label, x, y in zip(['A', 'B', 'C', 'D'], self.Alternatives[criteria1 - 1], self.Alternatives[criteria2 - 1]):
-            plt.annotate(label, xy=(x, y), xytext=(5, -5), textcoords='offset points')
+        x = np.array([self.Alternatives[i, criteria1 - 1] for i in range(len(self.Alternatives))])
+        y = np.array([self.Alternatives[i, criteria2 - 1] for i in range(len(self.Alternatives))])
+        plt.scatter(x, y)
+        alph = ['A', 'B', 'C', 'D']
+        for label in alph:
+            plt.annotate(label, xy=(), xytext=(x[alph.index(label)], y[alph.index(label)]))
         max_value = 10
         min_value = 1
         plt.scatter(min_value if criteria1-1 == 0 or criteria1-1 == 1 else max_value,
@@ -210,7 +213,7 @@ mc = MultiCriteria()
 print("\nMETHOD OF CHANGES OF CRITERIA BY LIMITATION\n")
 mc.criteria_to_limitation(2)
 print("\nMETHOD OF PARETO SPACE NARROWING\n")
-mc.pareto(1, 4)
+mc.pareto(1, 2)
 print("\nMETHOD OF WEIGHING AND UNIFICATION\n")
 mc.weighing_and_comparing()
 print("\nMETHOD OF HIERARCHY ANALYSIS\n")
