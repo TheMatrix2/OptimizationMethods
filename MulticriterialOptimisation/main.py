@@ -110,7 +110,7 @@ class MultiCriteria:
         plt.scatter(x, y)
         alph = ['A', 'B', 'C', 'D']
         for label in alph:
-            plt.annotate(label, xy=(), xytext=(x[alph.index(label)], y[alph.index(label)]))
+            plt.annotate(label, xy=(0, 0), xytext=(x[alph.index(label)], y[alph.index(label)] + 0.1))
         max_value = 10
         min_value = 1
         plt.scatter(min_value if criteria1-1 == 0 or criteria1-1 == 1 else max_value,
