@@ -1,5 +1,3 @@
-import numpy as np
-
 from Simplex import *
 
 MATRIX = np.array([[6, 17, 16, 18, 15],

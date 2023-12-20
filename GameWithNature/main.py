@@ -1,6 +1,6 @@
 import numpy as np
 
-ALPHA = 0.1
+ALPHA = 0.5
 MATRIX = np.array([[6, 17, 16, 18, 15],
                    [18, 8, 16, 8, 8],
                    [6, 13, 18, 4, 3],
