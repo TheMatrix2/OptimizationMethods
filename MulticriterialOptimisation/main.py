@@ -112,15 +112,16 @@ class MultiCriteria:
         for label in alph:
             plt.annotate(label, xy=(0, 0), xytext=(x[alph.index(label)], y[alph.index(label)] + 0.1))
         max_value = 10
-        min_value = 1
+        min_value = 0
         plt.scatter(min_value if criteria1-1 == 0 or criteria1-1 == 1 else max_value,
                     min_value if criteria2-1 == 0 or criteria2-1 == 1 else max_value,
-                    marker='*', color='red', label='Utopia')
-        plt.xlim(0, 12)
-        plt.ylim(0, 12)
+                    marker='*', color='red')
+        plt.annotate('Utopia', xy=(0, 0), xytext=(min_value+0.2 if criteria1-1 == 0 or criteria1-1 == 1 else max_value+0.2,
+                                                  min_value+0.2 if criteria2-1 == 0 or criteria2-1 == 1 else max_value+0.2))
+        plt.xlim(-1, 11)
+        plt.ylim(-1, 11)
         plt.xlabel(CRITERION[criteria1 - 1])
         plt.ylabel(CRITERION[criteria2 - 1])
-        plt.legend()
         plt.grid(True)
         plt.show()
 
@@ -206,14 +207,15 @@ class MultiCriteria:
                 alternative_comparing = np.vstack([alternative_comparing, normalized_column])
             else:
                 criteria_comparing = np.array(normalized_column)
+        print(alternative_comparing)
         print(np.dot(alternative_comparing[1:].T, criteria_comparing))
 
 
 mc = MultiCriteria()
 print("\nMETHOD OF CHANGES OF CRITERIA BY LIMITATION\n")
-mc.criteria_to_limitation(2)
+mc.criteria_to_limitation(1)
 print("\nMETHOD OF PARETO SPACE NARROWING\n")
-mc.pareto(1, 2)
+mc.pareto(1, 3)
 print("\nMETHOD OF WEIGHING AND UNIFICATION\n")
 mc.weighing_and_comparing()
 print("\nMETHOD OF HIERARCHY ANALYSIS\n")
